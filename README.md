@@ -4,9 +4,9 @@
 [![Tests](https://img.shields.io/badge/offline_tests-13%20passing-2F855A)](tests/)
 [![License: MIT](https://img.shields.io/badge/code_license-MIT-blue.svg)](LICENSE)
 
-A reproducible research project on cross-sectional momentum and risk budgeting in a fixed sample of 20 mainland Chinese A-shares. The project keeps the original 20-trading-day / top-10% momentum rule as a fixed comparator, then asks whether diversification, volatility targeting, and a market-trend exposure cap can reduce its severe historical drawdown without leverage or look-ahead.
+A reproducible research project on cross-sectional momentum and risk budgeting in a fixed sample of 20 mainland Chinese A-shares. The project keeps the original 20-trading-day / top-10% momentum rule as a fixed comparator, then asks whether diversification, volatility targeting, and a market-trend exposure cap can produce a less fragile historical profile without leverage. The implemented signal-to-execution protocol is chronological; the fixed current-stock sample nevertheless remains subject to survivorship and selection bias.
 
-The answer in the frozen sample is a trade-off, not a claim of an optimal strategy: the risk-controlled portfolio reduced maximum drawdown from **-59.23% to -28.99%**, while annualized return fell from **18.23% to 11.02%**. Same-universe equal-weight buy-and-hold still had the strongest annualized return (**19.93%**) and Sharpe ratio (**0.84**).
+The answer in the frozen sample is a trade-off, not a claim of an optimal strategy: the risk-controlled portfolio exhibited a **-28.99%** maximum drawdown versus **-59.23%** for the fixed original comparator, while annualized return fell from **18.23% to 11.02%**. Same-universe equal-weight buy-and-hold still had the strongest annualized return (**19.93%**) and Sharpe ratio (**0.84**).
 
 > Academic research and educational software only. The historical results are affected by material biases and are not investment advice.
 
