@@ -1,0 +1,341 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>A 股风险控制型动量研究报告</title>
+  <style>
+    :root {
+      --navy: #142638;
+      --ink: #1d2b34;
+      --muted: #65747d;
+      --line: #cbd5da;
+      --line-soft: #e3eaed;
+      --paper: #f0f4f5;
+      --panel: #ffffff;
+      --wash: #e8eff1;
+      --blue: #315a72;
+      --jade: #1b6f68;
+      --jade-soft: #dcece9;
+      --cinnabar: #b64b42;
+      --cinnabar-soft: #f3e3e0;
+      --ochre: #a96f1d;
+      --ochre-soft: #f4ead8;
+      --mono: "Cascadia Mono", "IBM Plex Mono", Consolas, monospace;
+      --display: "Source Han Serif SC", "Noto Serif CJK SC", "Songti SC", SimSun, serif;
+      --body: "Inter", "Microsoft YaHei", "PingFang SC", Arial, sans-serif;
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      color: var(--ink);
+      background:
+        linear-gradient(90deg, transparent 0, transparent calc(50% - .5px), rgba(49,90,114,.045) 50%, transparent calc(50% + .5px)),
+        var(--paper);
+      font-family: var(--body);
+      line-height: 1.65;
+      -webkit-font-smoothing: antialiased;
+    }
+    main { max-width: 1180px; margin: 0 auto; padding: 28px 24px 64px; }
+    .masthead {
+      position: relative;
+      overflow: hidden;
+      min-height: 320px;
+      padding: 34px 38px 30px;
+      color: #f7fbfc;
+      background: var(--navy);
+      border-top: 5px solid var(--jade);
+      display: grid;
+      grid-template-columns: minmax(0, 1.45fr) minmax(260px, .55fr);
+      gap: 36px;
+      align-items: end;
+    }
+    .masthead::after {
+      content: "RISK / RETURN";
+      position: absolute;
+      right: -18px;
+      top: 7px;
+      color: rgba(255,255,255,.045);
+      font: 700 72px/1 var(--mono);
+      letter-spacing: -.07em;
+      pointer-events: none;
+    }
+    .eyebrow {
+      margin: 0 0 14px;
+      color: #a8c6c2;
+      font: 700 11px/1.3 var(--mono);
+      letter-spacing: .18em;
+      text-transform: uppercase;
+    }
+    h1, h2, h3 { font-family: var(--display); }
+    h1 { margin: 0; max-width: 760px; font-size: clamp(35px, 4.2vw, 50px); line-height: 1.12; font-weight: 700; }
+    .masthead__thesis { margin: 20px 0 0; max-width: 760px; color: #d5e1e5; font-size: 16px; }
+    .run-stamp { border-left: 1px solid rgba(255,255,255,.2); padding-left: 22px; position: relative; z-index: 1; }
+    .run-stamp strong { display: block; font: 700 18px/1.4 var(--mono); color: #ffffff; }
+    .run-stamp span { display: block; margin-top: 6px; color: #aabac2; font-size: 13px; }
+    .run-stamp .mode { color: #9bd0c8; }
+    .report-grid { display: grid; grid-template-columns: minmax(0, 1fr) 280px; gap: 22px; align-items: start; margin-top: 22px; }
+    .main-column, .side-column { min-width: 0; }
+    .side-column { position: static; }
+    .panel { background: var(--panel); border: 1px solid var(--line); margin-bottom: 18px; }
+    .panel__head { padding: 18px 22px 14px; border-bottom: 1px solid var(--line-soft); display: flex; justify-content: space-between; gap: 16px; align-items: baseline; }
+    .panel__head h2 { margin: 0; font-size: 21px; line-height: 1.25; }
+    .panel__head small { color: var(--muted); font: 11px/1.3 var(--mono); letter-spacing: .08em; text-transform: uppercase; }
+    .panel__body { padding: 22px; }
+    .metric-ledger { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); border: 1px solid var(--line); margin-bottom: 18px; background: #fff; }
+    .metric-card { min-height: 122px; padding: 17px 18px; border-right: 1px solid var(--line); position: relative; }
+    .metric-card:last-child { border-right: 0; }
+    .metric-card::before { content: ""; position: absolute; left: 0; top: 0; width: 100%; height: 3px; background: var(--blue); }
+    .metric-card.improvement::before { background: var(--jade); }
+    .metric-card.loss::before { background: var(--cinnabar); }
+    .metric-card.exposure::before { background: var(--ochre); }
+    .metric-card .label { color: var(--muted); font-size: 12px; line-height: 1.35; }
+    .metric-card .value { margin-top: 13px; color: var(--navy); font: 700 clamp(22px, 2.6vw, 31px)/1 var(--mono); letter-spacing: -.04em; }
+    .metric-card .detail { margin-top: 9px; color: var(--muted); font-size: 11px; }
+    .risk-ledger { padding: 20px; border: 1px solid var(--line); background: #f8fbfb; }
+    .risk-ledger__head { display: flex; justify-content: space-between; gap: 16px; align-items: baseline; margin-bottom: 12px; }
+    .risk-ledger__head span { font-weight: 700; }
+    .risk-ledger__head code { font: 700 12px var(--mono); color: var(--navy); }
+    .risk-rail { height: 22px; display: flex; overflow: hidden; background: var(--wash); border: 1px solid #b8c7cc; }
+    .risk-rail__equity { display: block; background: var(--jade); }
+    .risk-rail__cash { display: block; background: repeating-linear-gradient(135deg, #dfe6e8 0, #dfe6e8 6px, #f4f7f8 6px, #f4f7f8 12px); }
+    .risk-legend { display: flex; gap: 18px; flex-wrap: wrap; margin-top: 10px; color: var(--muted); font-size: 11px; }
+    .dot { display: inline-block; width: 8px; height: 8px; margin-right: 6px; }
+    .dot.equity { background: var(--jade); }
+    .dot.cash { border: 1px solid #9babb1; background: #edf2f3; }
+    .table-scroll { width: 100%; overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; white-space: nowrap; }
+    th, td { padding: 11px 10px; border-bottom: 1px solid var(--line-soft); text-align: right; font-variant-numeric: tabular-nums; }
+    th { color: #52616a; background: #f5f8f9; font-size: 11px; font-weight: 700; letter-spacing: .02em; }
+    th:first-child, td:first-child { position: sticky; left: 0; z-index: 1; text-align: left; background: inherit; }
+    tbody tr:nth-child(even) { background: #fafcfc; }
+    tbody tr:hover { background: #edf4f3; }
+    .metric-table tbody tr:first-child { background: var(--jade-soft); font-weight: 700; }
+    .holdout-table tbody tr:nth-last-child(-n+4) { background: #f4f8f7; }
+    .config-table, .side-table { white-space: normal; table-layout: fixed; }
+    .config-table th:first-child, .config-table td:first-child,
+    .side-table th:first-child, .side-table td:first-child { position: static; width: 45%; }
+    .config-table th, .config-table td, .side-table th, .side-table td {
+      padding-left: 6px;
+      padding-right: 6px;
+      overflow-wrap: anywhere;
+      vertical-align: top;
+    }
+    .chart { display: block; max-width: 100%; height: auto; border: 1px solid var(--line-soft); }
+    .prose { color: #40515b; }
+    .prose p:first-child { margin-top: 0; }
+    .prose ul { margin: 0; padding-left: 20px; }
+    .prose li + li { margin-top: 7px; }
+    .callout { padding: 16px 18px; border-left: 4px solid var(--ochre); background: var(--ochre-soft); color: #5a421d; }
+    .callout strong { color: #3f2d13; }
+    .callout.research { border-left-color: var(--blue); background: #e6edf1; color: #334e5f; }
+    .empty { padding: 18px; color: var(--muted); border: 1px dashed var(--line); background: #f8fafb; }
+    .side-card { padding: 18px; border: 1px solid var(--line); background: #fff; margin-bottom: 14px; }
+    .side-card h3 { margin: 0 0 12px; font-size: 17px; }
+    .side-card ul { margin: 0; padding-left: 17px; color: #40515b; font-size: 13px; }
+    .side-card li + li { margin-top: 8px; }
+    .side-card code, footer code { font-family: var(--mono); font-size: .92em; }
+    .audit-list { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+    .audit-item { padding: 15px; border: 1px solid var(--line-soft); background: #f9fbfb; }
+    .audit-item strong { display: block; color: var(--navy); margin-bottom: 5px; }
+    .audit-item span { color: var(--muted); font-size: 12px; }
+    footer { margin-top: 24px; padding: 18px 0; border-top: 1px solid var(--line); color: var(--muted); font-size: 12px; }
+    a:focus-visible { outline: 3px solid var(--ochre); outline-offset: 3px; }
+    @media (max-width: 920px) {
+      .masthead { grid-template-columns: 1fr; min-height: auto; }
+      .run-stamp { border-left: 0; border-top: 1px solid rgba(255,255,255,.2); padding: 16px 0 0; }
+      .report-grid { grid-template-columns: 1fr; }
+      .side-column { position: static; display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+      .metric-ledger { grid-template-columns: 1fr 1fr; }
+      .metric-card:nth-child(2) { border-right: 0; }
+      .metric-card:nth-child(-n+2) { border-bottom: 1px solid var(--line); }
+    }
+    @media (max-width: 600px) {
+      main { padding: 12px 10px 40px; }
+      .masthead { padding: 28px 22px; }
+      .masthead::after { display: none; }
+      .metric-ledger, .side-column, .audit-list { grid-template-columns: 1fr; }
+      .metric-card { border-right: 0; border-bottom: 1px solid var(--line); }
+      .metric-card:last-child { border-bottom: 0; }
+      .panel__head, .panel__body { padding-left: 16px; padding-right: 16px; }
+      .risk-ledger__head { display: block; }
+      .risk-ledger__head code { display: block; margin-top: 5px; }
+    }
+    @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+    @page { size: A4; margin: 11mm; }
+    @media print {
+      body { background: white; }
+      main { max-width: none; padding: 0; font-size: 10px; }
+      .masthead { min-height: 0; break-after: avoid; padding: 20px 24px; margin-bottom: 8px; }
+      .masthead h1 { font-size: 34px; }
+      .report-grid { display: block; }
+      .side-column { position: static; }
+      .panel { break-inside: auto; box-shadow: none; margin-bottom: 8px; }
+      .panel__head { break-after: avoid; padding: 10px 14px; }
+      .panel__body { padding: 10px 14px 12px; }
+      .side-card, .metric-ledger { break-inside: avoid; box-shadow: none; }
+      .metric-card { padding: 11px 13px; }
+      .table-scroll { overflow: visible; }
+      table { white-space: normal; font-size: 8px; }
+      th, td { padding: 5px 6px; }
+      thead { display: table-header-group; }
+      tr { break-inside: avoid; }
+      .chart { max-height: 230mm; object-fit: contain; }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <header class="masthead">
+      <div>
+        <p class="eyebrow">A-SHARE QUANT RESEARCH · RISK BUDGET LEDGER</p>
+        <h1>A 股风险控制型<br>动量研究报告</h1>
+        <p class="masthead__thesis">本次历史回测中，主策略最大回撤为 -28.99%，经典 20/10 动量为 -59.23%；回撤绝对值改善 +30.24 个百分点。</p>
+      </div>
+      <div class="run-stamp">
+        <strong>2019-08-01 → 2026-07-30</strong>
+        <span class="mode">风险控制模式</span>
+        <span>120 日动量 · 前 30.00% · 月度调仓</span>
+        <span>研究回测，不构成投资建议</span>
+      </div>
+    </header>
+
+    <div class="report-grid">
+      <div class="main-column">
+        <section class="metric-ledger" aria-label="核心指标">
+          <article class="metric-card loss"><div class="label">主策略最大回撤</div><div class="value">-28.99%</div><div class="detail">越接近 0，历史峰值损失越小</div></article>
+          <article class="metric-card"><div class="label">经典 20/10 最大回撤</div><div class="value">-59.23%</div><div class="detail">固定经典策略对照</div></article>
+          <article class="metric-card improvement"><div class="label">回撤绝对值改善</div><div class="value">+30.24 个百分点</div><div class="detail">相对改善 51.05%</div></article>
+          <article class="metric-card exposure"><div class="label">日均实际股票敞口</div><div class="value">69.18%</div><div class="detail">主策略夏普 0.75</div></article>
+        </section>
+
+        <section class="panel">
+          <div class="panel__head"><h2>四组合绩效对照</h2><small>COMMON COMPARISON WINDOW</small></div>
+          <div class="panel__body">
+            <div class="table-scroll"><table class="metric-table"><thead><tr><th>组合</th><th>总收益率</th><th>年化收益率</th><th>年化波动率</th><th>最大回撤</th><th>夏普</th><th>Sortino</th><th>Calmar</th><th>平均股票敞口</th></tr></thead><tbody><tr><td>风控核心—卫星动量</td><td>108.10%</td><td>11.02%</td><td>15.67%</td><td>-28.99%</td><td>0.75</td><td>1.06</td><td>0.38</td><td>69.18%</td></tr><tr><td>经典动量（20 日 / 前 10%）</td><td>223.39%</td><td>18.23%</td><td>37.09%</td><td>-59.23%</td><td>0.64</td><td>0.95</td><td>0.31</td><td>100.00%</td></tr><tr><td>股票池等权买入持有</td><td>257.39%</td><td>19.93%</td><td>25.68%</td><td>-43.01%</td><td>0.84</td><td>1.23</td><td>0.46</td><td>100.00%</td></tr><tr><td>沪深 300（000300）</td><td>19.62%</td><td>2.59%</td><td>18.36%</td><td>-45.60%</td><td>0.23</td><td>0.33</td><td>0.06</td><td>100.00%</td></tr></tbody></table></div>
+            <div class="callout research" style="margin-top:16px"><strong>阅读顺序：</strong>先比较最大回撤和波动率，再看夏普、Sortino 与 Calmar，最后结合平均股票敞口判断收益是否主要来自承担更多风险。四组使用主程序提供的共同比较起点。</div>
+          </div>
+        </section>
+
+        <section class="panel">
+          <div class="panel__head"><h2>净值与风险诊断</h2><small>PATH, NOT JUST ENDPOINT</small></div>
+          <div class="panel__body">
+            <img class="chart" src="equity_curve.png" alt="四组合净值曲线">
+            <div style="height:16px"></div>
+            <img class="chart" src="research_diagnostics.png" alt="回撤、年度收益、月度收益与风险敞口诊断图">
+            <p class="prose">诊断图依次比较回撤路径、自然年度收益、主策略最近 36 个月收益，以及实际股票风险敞口。图形用于识别风险集中与时期依赖，不代表未来预测。</p>
+          </div>
+        </section>
+
+        <section class="panel">
+          <div class="panel__head"><h2>风险预算与降仓记录</h2><small>NO LEVERAGE · CASH IS EXPLICIT</small></div>
+          <div class="panel__body">
+            
+      <div class="risk-ledger" aria-label="平均股票风险敞口与现金权重">
+        <div class="risk-ledger__head">
+          <span>平均实际风险预算</span>
+          <code>69.18% 股票 / 30.82% 现金</code>
+        </div>
+        <div class="risk-rail" role="img" aria-label="股票敞口 69.18%，现金 30.82%">
+          <span class="risk-rail__equity" style="width:69.1848%"></span>
+          <span class="risk-rail__cash" style="width:30.8152%"></span>
+        </div>
+        <div class="risk-legend"><span><i class="dot equity"></i>股票风险资产</span><span><i class="dot cash"></i>零收益现金假设</span></div>
+      </div>
+    
+            <div class="audit-list" style="margin:16px 0">
+              <div class="audit-item"><strong>69.24%</strong><span>调仓日平均目标股票仓位</span></div>
+              <div class="audit-item"><strong>0.00%</strong><span>最低目标股票仓位</span></div>
+              <div class="audit-item"><strong>45 次</strong><span>波动率上限实际触发</span></div>
+              <div class="audit-item"><strong>33 次</strong><span>基准趋势弱市上限触发</span></div>
+            </div>
+            <div class="table-scroll"><table class="risk-log-table"><thead><tr><th>信号日</th><th>执行日</th><th>估计波动率</th><th>波动率上限</th><th>趋势状态</th><th>趋势上限</th><th>目标股票仓位</th><th>目标现金</th></tr></thead><tbody><tr><td>2026-06-30</td><td>2026-07-01</td><td>16.80%</td><td>100.00%</td><td>均线上方</td><td>100.00%</td><td>100.00%</td><td>0.00%</td></tr><tr><td>2026-05-29</td><td>2026-06-01</td><td>15.64%</td><td>100.00%</td><td>均线上方</td><td>100.00%</td><td>100.00%</td><td>0.00%</td></tr><tr><td>2026-04-30</td><td>2026-05-06</td><td>16.65%</td><td>100.00%</td><td>均线上方</td><td>100.00%</td><td>100.00%</td><td>0.00%</td></tr><tr><td>2026-03-31</td><td>2026-04-01</td><td>16.22%</td><td>100.00%</td><td>均线上方</td><td>100.00%</td><td>100.00%</td><td>0.00%</td></tr><tr><td>2026-02-27</td><td>2026-03-02</td><td>14.50%</td><td>100.00%</td><td>均线上方</td><td>100.00%</td><td>100.00%</td><td>0.00%</td></tr><tr><td>2026-01-30</td><td>2026-02-02</td><td>14.76%</td><td>100.00%</td><td>均线上方</td><td>100.00%</td><td>100.00%</td><td>0.00%</td></tr><tr><td>2025-12-31</td><td>2026-01-05</td><td>15.99%</td><td>100.00%</td><td>均线上方</td><td>100.00%</td><td>100.00%</td><td>0.00%</td></tr><tr><td>2025-11-28</td><td>2025-12-01</td><td>16.84%</td><td>100.00%</td><td>均线上方</td><td>100.00%</td><td>100.00%</td><td>0.00%</td></tr><tr><td>2025-10-31</td><td>2025-11-03</td><td>15.76%</td><td>100.00%</td><td>均线上方</td><td>100.00%</td><td>100.00%</td><td>0.00%</td></tr><tr><td>2025-09-30</td><td>2025-10-09</td><td>13.37%</td><td>100.00%</td><td>均线上方</td><td>100.00%</td><td>100.00%</td><td>0.00%</td></tr><tr><td>2025-08-29</td><td>2025-09-01</td><td>11.50%</td><td>100.00%</td><td>均线上方</td><td>100.00%</td><td>100.00%</td><td>0.00%</td></tr><tr><td>2025-07-31</td><td>2025-08-01</td><td>10.31%</td><td>100.00%</td><td>均线上方</td><td>100.00%</td><td>100.00%</td><td>0.00%</td></tr></tbody></table></div>
+            <p class="prose">表中上限均在月末信号日收盘后、仅使用当日及以前数据计算。目标仓位不超过 100%，系统不向上放大低波动组合；未投资部分按日收益 0 的现金处理。停牌冻结持仓可能令实际敞口短期偏离目标，因此同时保留目标与执行权重供审计。</p>
+          </div>
+        </section>
+
+        <section class="panel">
+          <div class="panel__head"><h2>回顾性时间留出诊断</h2><small>TEMPORAL HOLDOUT · NOT TRUE OOS</small></div>
+          <div class="panel__body">
+            <div class="table-scroll"><table class="holdout-table"><thead><tr><th>区段</th><th>组合</th><th>区间</th><th>年化收益率</th><th>年化波动率</th><th>最大回撤</th><th>夏普</th><th>Sortino</th></tr></thead><tbody><tr><td>开发期（回顾）</td><td>风控核心—卫星动量</td><td>2019-08-01 至 2023-12-29</td><td>11.59%</td><td>16.33%</td><td>-28.52%</td><td>0.75</td><td>1.07</td></tr><tr><td>开发期（回顾）</td><td>经典动量（20 日 / 前 10%）</td><td>2019-08-01 至 2023-12-29</td><td>15.67%</td><td>40.78%</td><td>-59.23%</td><td>0.56</td><td>0.83</td></tr><tr><td>开发期（回顾）</td><td>股票池等权买入持有</td><td>2019-08-01 至 2023-12-29</td><td>16.30%</td><td>27.18%</td><td>-41.61%</td><td>0.69</td><td>1.01</td></tr><tr><td>开发期（回顾）</td><td>沪深 300（000300）</td><td>2019-08-01 至 2023-12-29</td><td>-2.30%</td><td>18.27%</td><td>-43.22%</td><td>-0.04</td><td>-0.05</td></tr><tr><td>时间留出期（回顾）</td><td>风控核心—卫星动量</td><td>2024-01-02 至 2026-07-30</td><td>10.06%</td><td>14.49%</td><td>-14.20%</td><td>0.73</td><td>1.05</td></tr><tr><td>时间留出期（回顾）</td><td>经典动量（20 日 / 前 10%）</td><td>2024-01-02 至 2026-07-30</td><td>22.78%</td><td>29.70%</td><td>-30.96%</td><td>0.84</td><td>1.28</td></tr><tr><td>时间留出期（回顾）</td><td>股票池等权买入持有</td><td>2024-01-02 至 2026-07-30</td><td>26.44%</td><td>22.90%</td><td>-17.90%</td><td>1.14</td><td>1.71</td></tr><tr><td>时间留出期（回顾）</td><td>沪深 300（000300）</td><td>2024-01-02 至 2026-07-30</td><td>11.58%</td><td>18.51%</td><td>-15.66%</td><td>0.68</td><td>1.02</td></tr></tbody></table></div>
+            <div class="callout" style="margin-top:16px"><strong>研究诚信说明：</strong><code>temporal_holdout_diagnostic.csv</code> 仅用于回顾性时间分段。项目此前已经查看过 2019—2026 全样本及参数敏感性，因此以 2024-01-01 切分不能宣传为真正样本外检验。真正的样本外证据需要在参数冻结后等待未来数据，或采用严格的滚动 walk-forward 流程。</div>
+          </div>
+        </section>
+
+        <section class="panel">
+          <div class="panel__head"><h2>分阶段与参数稳健性</h2><small>ROBUSTNESS CHECKS</small></div>
+          <div class="panel__body">
+            <h3>全样本 / 前半段 / 后半段</h3>
+            <div class="table-scroll"><table class=""><thead><tr><th>时期</th><th>组合</th><th>区间</th><th>年化收益率</th><th>年化波动率</th><th>最大回撤</th><th>夏普比率</th></tr></thead><tbody><tr><td>全样本</td><td>风控核心—卫星动量</td><td>2019-08-01 至 2026-07-30</td><td>11.02%</td><td>15.67%</td><td>-28.99%</td><td>0.75</td></tr><tr><td>全样本</td><td>经典动量（20 日 / 前 10%）</td><td>2019-08-01 至 2026-07-30</td><td>18.23%</td><td>37.09%</td><td>-59.23%</td><td>0.64</td></tr><tr><td>全样本</td><td>沪深 300（000300）</td><td>2019-08-01 至 2026-07-30</td><td>2.59%</td><td>18.36%</td><td>-45.60%</td><td>0.23</td></tr><tr><td>全样本</td><td>股票池等权买入持有</td><td>2019-08-01 至 2026-07-30</td><td>19.93%</td><td>25.68%</td><td>-43.01%</td><td>0.84</td></tr><tr><td>前半段</td><td>风控核心—卫星动量</td><td>2019-08-01 至 2023-02-01</td><td>20.53%</td><td>17.28%</td><td>-24.03%</td><td>1.17</td></tr><tr><td>前半段</td><td>经典动量（20 日 / 前 10%）</td><td>2019-08-01 至 2023-02-01</td><td>26.47%</td><td>44.03%</td><td>-59.23%</td><td>0.75</td></tr><tr><td>前半段</td><td>沪深 300（000300）</td><td>2019-08-01 至 2023-02-01</td><td>2.84%</td><td>19.39%</td><td>-39.59%</td><td>0.24</td></tr><tr><td>前半段</td><td>股票池等权买入持有</td><td>2019-08-01 至 2023-02-01</td><td>30.95%</td><td>29.16%</td><td>-37.78%</td><td>1.07</td></tr><tr><td>后半段</td><td>风控核心—卫星动量</td><td>2023-02-02 至 2026-07-30</td><td>2.26%</td><td>13.87%</td><td>-17.58%</td><td>0.23</td></tr><tr><td>后半段</td><td>经典动量（20 日 / 前 10%）</td><td>2023-02-02 至 2026-07-30</td><td>10.53%</td><td>28.52%</td><td>-30.96%</td><td>0.49</td></tr><tr><td>后半段</td><td>沪深 300（000300）</td><td>2023-02-02 至 2026-07-30</td><td>2.34%</td><td>17.28%</td><td>-24.44%</td><td>0.22</td></tr><tr><td>后半段</td><td>股票池等权买入持有</td><td>2023-02-02 至 2026-07-30</td><td>9.84%</td><td>21.65%</td><td>-29.70%</td><td>0.54</td></tr></tbody></table></div>
+            <h3 style="margin-top:26px">纯动量参数敏感性</h3>
+            <div class="table-scroll"><table class=""><thead><tr><th>类型</th><th>观察期</th><th>选股比例</th><th>平均持股数</th><th>年化收益率</th><th>最大回撤</th><th>夏普比率</th></tr></thead><tbody><tr><td>本次动量参数</td><td>120</td><td>30.00%</td><td>6.0</td><td>23.96%</td><td>-38.28%</td><td>0.93</td></tr><tr><td>纯动量对照参数</td><td>10</td><td>10.00%</td><td>2.0</td><td>25.61%</td><td>-61.72%</td><td>0.80</td></tr><tr><td>纯动量对照参数</td><td>10</td><td>20.00%</td><td>4.0</td><td>26.26%</td><td>-48.03%</td><td>0.92</td></tr><tr><td>纯动量对照参数</td><td>10</td><td>30.00%</td><td>6.0</td><td>21.05%</td><td>-49.56%</td><td>0.84</td></tr><tr><td>纯动量对照参数</td><td>20</td><td>10.00%</td><td>2.0</td><td>17.69%</td><td>-59.23%</td><td>0.62</td></tr><tr><td>纯动量对照参数</td><td>20</td><td>20.00%</td><td>4.0</td><td>15.59%</td><td>-57.75%</td><td>0.63</td></tr><tr><td>纯动量对照参数</td><td>20</td><td>30.00%</td><td>6.0</td><td>15.82%</td><td>-52.13%</td><td>0.69</td></tr><tr><td>纯动量对照参数</td><td>60</td><td>10.00%</td><td>2.0</td><td>19.25%</td><td>-69.64%</td><td>0.66</td></tr><tr><td>纯动量对照参数</td><td>60</td><td>20.00%</td><td>4.0</td><td>11.51%</td><td>-64.61%</td><td>0.52</td></tr><tr><td>纯动量对照参数</td><td>60</td><td>30.00%</td><td>6.0</td><td>7.85%</td><td>-65.03%</td><td>0.42</td></tr><tr><td>纯动量对照参数</td><td>120</td><td>10.00%</td><td>2.0</td><td>11.37%</td><td>-61.20%</td><td>0.47</td></tr><tr><td>纯动量对照参数</td><td>120</td><td>20.00%</td><td>4.0</td><td>17.21%</td><td>-52.51%</td><td>0.66</td></tr></tbody></table></div>
+            <p class="prose">敏感性表检验的是纯动量观察期与选股比例，并不把每个风控开关再次网格搜索。这样可以减少用同一历史样本反复挑选风险参数造成的过拟合。</p>
+          </div>
+        </section>
+
+        <section class="panel">
+          <div class="panel__head"><h2>最近一次动量信号</h2><small>PLANNED → SCALED → EXECUTED</small></div>
+          <div class="panel__body">
+            <div class="table-scroll"><table class="position-table"><thead><tr><th>代码</th><th>排名</th><th>120 日动量</th><th>纯动量目标</th><th>核心—卫星目标</th><th>风控后目标</th><th>实际执行</th></tr></thead><tbody><tr><td>002475</td><td>1</td><td>18.82%</td><td>16.67%</td><td>8.50%</td><td>8.50%</td><td>8.50%</td></tr><tr><td>002415</td><td>2</td><td>18.42%</td><td>16.67%</td><td>8.50%</td><td>8.50%</td><td>8.50%</td></tr><tr><td>300750</td><td>3</td><td>7.35%</td><td>16.67%</td><td>8.50%</td><td>8.50%</td><td>8.50%</td></tr><tr><td>600030</td><td>4</td><td>1.66%</td><td>16.67%</td><td>8.50%</td><td>8.50%</td><td>8.50%</td></tr><tr><td>000333</td><td>5</td><td>0.88%</td><td>16.67%</td><td>8.50%</td><td>8.50%</td><td>8.50%</td></tr><tr><td>600900</td><td>6</td><td>-3.60%</td><td>16.67%</td><td>8.50%</td><td>8.50%</td><td>8.50%</td></tr></tbody></table></div>
+            <p class="prose">该表列出动量卫星入选股票；等权核心还可能持有其他股票。新版日志并列保存纯动量、核心—卫星混合、风控缩放与真实执行权重。</p>
+          </div>
+        </section>
+
+        <section class="panel">
+          <div class="panel__head"><h2>数据质量</h2><small>QUOTE AVAILABILITY</small></div>
+          <div class="panel__body">
+            <div class="table-scroll"><table class=""><thead><tr><th>代码</th><th>首个报价日</th><th>最后报价日</th><th>报价天数</th><th>缺失比例</th><th>最长连续缺失</th></tr></thead><tbody><tr><td>600030</td><td>2019-01-10</td><td>2026-07-30</td><td>1824</td><td>0.71%</td><td>6</td></tr><tr><td>000333</td><td>2019-01-02</td><td>2026-07-30</td><td>1826</td><td>0.60%</td><td>10</td></tr><tr><td>600900</td><td>2019-01-02</td><td>2026-07-30</td><td>1826</td><td>0.60%</td><td>10</td></tr><tr><td>000651</td><td>2019-01-02</td><td>2026-07-30</td><td>1831</td><td>0.33%</td><td>5</td></tr><tr><td>601012</td><td>2019-01-02</td><td>2026-07-30</td><td>1831</td><td>0.33%</td><td>6</td></tr><tr><td>601899</td><td>2019-01-02</td><td>2026-07-30</td><td>1833</td><td>0.22%</td><td>4</td></tr><tr><td>002415</td><td>2019-01-02</td><td>2026-07-30</td><td>1835</td><td>0.11%</td><td>2</td></tr><tr><td>000001</td><td>2019-01-02</td><td>2026-07-30</td><td>1837</td><td>0.00%</td><td>0</td></tr><tr><td>000858</td><td>2019-01-02</td><td>2026-07-30</td><td>1837</td><td>0.00%</td><td>0</td></tr><tr><td>300750</td><td>2019-01-02</td><td>2026-07-30</td><td>1837</td><td>0.00%</td><td>0</td></tr><tr><td>002594</td><td>2019-01-02</td><td>2026-07-30</td><td>1837</td><td>0.00%</td><td>0</td></tr><tr><td>002475</td><td>2019-01-02</td><td>2026-07-30</td><td>1837</td><td>0.00%</td><td>0</td></tr><tr><td>600309</td><td>2019-01-02</td><td>2026-07-30</td><td>1837</td><td>0.00%</td><td>0</td></tr><tr><td>600276</td><td>2019-01-02</td><td>2026-07-30</td><td>1837</td><td>0.00%</td><td>0</td></tr><tr><td>600036</td><td>2019-01-02</td><td>2026-07-30</td><td>1837</td><td>0.00%</td><td>0</td></tr><tr><td>600887</td><td>2019-01-02</td><td>2026-07-30</td><td>1837</td><td>0.00%</td><td>0</td></tr><tr><td>600519</td><td>2019-01-02</td><td>2026-07-30</td><td>1837</td><td>0.00%</td><td>0</td></tr><tr><td>601318</td><td>2019-01-02</td><td>2026-07-30</td><td>1837</td><td>0.00%</td><td>0</td></tr><tr><td>601398</td><td>2019-01-02</td><td>2026-07-30</td><td>1837</td><td>0.00%</td><td>0</td></tr><tr><td>601888</td><td>2019-01-02</td><td>2026-07-30</td><td>1837</td><td>0.00%</td><td>0</td></tr></tbody></table></div>
+            <p class="prose">缺失报价日使用上一笔有效收盘价估值，但该日禁止交易。价格缓存、失败代码、股票池与运行参数记录在 <code>run_metadata.txt</code>。</p>
+          </div>
+        </section>
+
+        <section class="panel">
+          <div class="panel__head"><h2>方法、时序与边界</h2><small>RESEARCH PROTOCOL</small></div>
+          <div class="panel__body prose">
+            <ul>
+              <li><strong>信号：</strong>每月最后一个交易日收盘后，使用截至该日的价格计算过去 120 个交易日横截面动量；不会用下一交易日能否成交改变排名。</li>
+              <li><strong>执行滞后：</strong>目标在下一交易日收盘执行。执行日当天先由旧持仓取得收益，再调仓并扣费；新持仓从再下一交易日开始贡献收盘到收盘收益。</li>
+              <li><strong>核心—卫星：</strong>等权核心与动量卫星先在目标权重层合并，再统一计算换手和成本，避免事后拼接收益率低估交易摩擦。</li>
+              <li><strong>风险控制：</strong>波动率与基准均线只读取信号日及以前数据；两者均为股票仓位上限。最终权重合计不得超过 100%，不允许卖空或隐含杠杆。</li>
+              <li><strong>对照组：</strong>经典动量固定为 20 日 / 前 10%；股票池等权为共同起点买入持有；沪深 300 为未复权价格指数。</li>
+              <li><strong>费用与现金：</strong>扣除简化单边成本 0.10%；现金日收益假设为 0，未计货币基金或融资收益。</li>
+            </ul>
+          </div>
+        </section>
+
+        <section class="panel">
+          <div class="panel__head"><h2>关键局限</h2><small>WHAT THIS BACKTEST CANNOT CLAIM</small></div>
+          <div class="panel__body">
+            <div class="callout"><strong>不可直接外推到实盘：</strong>固定示例股票池带来幸存者偏差；股票采用前复权价格而基准采用价格指数，口径不完全一致；系统尚未完整模拟涨跌停、T+1、100 股整数倍、最低佣金、卖出印花税、滑点、冲击成本、ST、退市及历史成分股。风险控制降低历史回撤并不保证未来仍然有效。</div>
+          </div>
+        </section>
+      </div>
+
+      <aside class="side-column">
+        <section class="side-card">
+          <p class="eyebrow" style="color:var(--jade)">RUN CONFIGURATION</p>
+          <h3>本次设置</h3>
+          <div class="table-scroll"><table class="config-table"><thead><tr><th>项目</th><th>值</th></tr></thead><tbody><tr><td>主策略</td><td>风控核心—卫星动量</td></tr><tr><td>回测区间</td><td>2019-08-01 至 2026-07-30</td></tr><tr><td>动量信号</td><td>120 个交易日 / 排名前 30.00%</td></tr><tr><td>核心 / 卫星</td><td>股票池等权核心 70.00% / 动量卫星 30.00%</td></tr><tr><td>波动率控制</td><td>60 日估计 / 目标 18.00% / 仅降仓</td></tr><tr><td>趋势控制</td><td>基准 200 日均线 / 弱市仓位上限 50.00%</td></tr><tr><td>杠杆 / 现金</td><td>禁止杠杆；现金日收益假设 0</td></tr><tr><td>交易成本</td><td>简化单边成本 0.10%</td></tr><tr><td>比较基准</td><td>沪深 300（000300）</td></tr><tr><td>股票池</td><td>20 只固定 CSV 示例股票（存在幸存者偏差）</td></tr><tr><td>数据源</td><td>AkShare / 腾讯财经公开 A 股行情</td></tr><tr><td>项目版本</td><td>3.0.0-risk-controlled</td></tr><tr><td>生成时间</td><td>2026-08-12 21:38:45</td></tr></tbody></table></div>
+        </section>
+        <section class="side-card">
+          <p class="eyebrow" style="color:var(--jade)">AUTOMATED READOUT</p>
+          <h3>自动观察</h3>
+          <ul><li>相对经典 20 日 / 前 10% 动量，主策略最大回撤绝对值减少 +30.24 个百分点（相对缩减 51.05%）。</li><li>主策略年化收益率在本样本内高于基准 8.43%；这是历史差异，不是未来收益预测。</li><li>主策略最佳月份为 2020-07（18.70%），最差月份为 2023-05（-9.30%）；正收益月份占比 51.19%。</li><li>主策略日均实际股票敞口为 69.18%，日均现金为 30.82%；降仓意味着收益与损失都会被同步压低。</li><li>回测共记录 84 次月度调仓；最近一次动量入选代码为：002475、002415、300750、600030、000333、600900。</li></ul>
+        </section>
+        <section class="side-card">
+          <p class="eyebrow" style="color:var(--cinnabar)">RISK SNAPSHOT</p>
+          <h3>尾部与交易摘要</h3>
+          <div class="table-scroll"><table class="side-table"><thead><tr><th>指标</th><th>结果</th></tr></thead><tbody><tr><td>相对基准累计收益</td><td>73.97%</td></tr><tr><td>相对基准年化收益率差</td><td>+8.43%</td></tr><tr><td>跟踪误差（年化）</td><td>9.11%</td></tr><tr><td>信息比率</td><td>0.82</td></tr><tr><td>正收益交易日比例</td><td>51.71%</td></tr><tr><td>最佳 / 最差单日</td><td>5.42% / -7.80%</td></tr><tr><td>最长回撤持续期</td><td>1322 个交易日</td></tr><tr><td>平均调仓换手率</td><td>20.00%</td></tr><tr><td>交易成本率简单累计</td><td>1.66%</td></tr><tr><td>历史 95% VaR（日频）</td><td>-1.38%</td></tr><tr><td>历史 95% CVaR（日频）</td><td>-2.33%</td></tr></tbody></table></div>
+        </section>
+      </aside>
+    </div>
+
+    <footer>
+      数据源：AkShare / 腾讯财经公开 A 股行情 ·
+      版本：3.0.0-risk-controlled ·
+      生成：2026-08-12 21:38:45。本报告仅用于量化研究展示，不构成投资建议。
+    </footer>
+  </main>
+</body>
+</html>

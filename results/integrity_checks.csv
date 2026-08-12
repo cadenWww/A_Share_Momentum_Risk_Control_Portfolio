@@ -1,0 +1,11 @@
+﻿check,passed,detail
+signal_precedes_trade,True,checked_rows=504
+selected_strategy_nav_identity,True,max_abs_error=0.000e+00
+classic_momentum_nav_identity,True,max_abs_error=0.000e+00
+benchmark_nav_identity,True,max_abs_error=0.000e+00
+equal_weight_nav_identity,True,max_abs_error=0.000e+00
+cost_identity,True,max_abs_error=0.000e+00
+no_short_or_leverage,True,min=0.000000; max=1.000000
+cash_equity_identity,True,max_abs_error=6.661e-16
+risk_signal_precedes_trade,True,checked_rebalances=84
+risk_target_without_leverage,True,max_target=1.000000

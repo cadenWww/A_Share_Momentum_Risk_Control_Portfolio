@@ -1,0 +1,16 @@
+﻿test_cash_target_is_not_scaled_back_to_full_investment (test_backtest.BacktestRuleTests.test_cash_target_is_not_scaled_back_to_full_investment) ... ok
+test_core_satellite_target_is_diversified (test_backtest.BacktestRuleTests.test_core_satellite_target_is_diversified) ... ok
+test_future_suffix_does_not_change_past_targets (test_backtest.BacktestRuleTests.test_future_suffix_does_not_change_past_targets) ... ok
+test_initial_purchase_charges_one_side_cost (test_backtest.BacktestRuleTests.test_initial_purchase_charges_one_side_cost) ... ok
+test_insufficient_volatility_history_stays_in_cash (test_backtest.BacktestRuleTests.test_insufficient_volatility_history_stays_in_cash) ... ok
+test_invalid_leverage_and_short_targets_are_rejected (test_backtest.BacktestRuleTests.test_invalid_leverage_and_short_targets_are_rejected) ... ok
+test_next_day_suspension_does_not_change_signal_ranking (test_backtest.BacktestRuleTests.test_next_day_suspension_does_not_change_signal_ranking) ... ok
+test_return_cost_and_weight_identities_hold (test_backtest.BacktestRuleTests.test_return_cost_and_weight_identities_hold) ... ok
+test_signal_is_traded_on_next_trading_day (test_backtest.BacktestRuleTests.test_signal_is_traded_on_next_trading_day) ... ok
+test_suspended_holding_cannot_be_sold (test_backtest.BacktestRuleTests.test_suspended_holding_cannot_be_sold) ... ok
+test_suspended_position_uses_partial_risk_budget (test_backtest.BacktestRuleTests.test_suspended_position_uses_partial_risk_budget) ... ok
+test_trend_cap_uses_signal_close_not_trade_day_close (test_backtest.BacktestRuleTests.test_trend_cap_uses_signal_close_not_trade_day_close) ... ok
+test_volatility_control_uses_only_information_through_signal_date (test_backtest.BacktestRuleTests.test_volatility_control_uses_only_information_through_signal_date) ... ok
+----------------------------------------------------------------------
+Ran 13 tests in 0.121s
+OK
